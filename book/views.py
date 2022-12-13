@@ -1,13 +1,13 @@
-from django.http import HttpResponse, JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from rest_framework.parsers import JSONParser
+from rest_framework import status
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
 
 from book.models import Source, Transaction, User
 from book.serializers import SourceSerializer, TransactionSerializer, UserSerializer
 from book.utils import validate_signup, validate_source
 
 
-@csrf_exempt
+@api_view(['GET', 'POST'])
 def user_methods(request):
     """
     List all users, or create a new user.
@@ -15,22 +15,21 @@ def user_methods(request):
     if request.method == 'GET':
         user = User.objects.all()
         serializer = UserSerializer(user, many=True)
-        return JsonResponse(serializer.data, safe=False)
+        return Response(serializer.data)
 
     elif request.method == 'POST':
-        data = JSONParser().parse(request)
-        validated_response = validate_signup(data)
+        validated_response = validate_signup(request.data)
         if validated_response:
             return validated_response
 
-        serializer = UserSerializer(data=data)
+        serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return JsonResponse(serializer.data, status=201)
-        return JsonResponse(serializer.errors, status=400)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@csrf_exempt
+@api_view(['GET', 'PUT', 'DELETE'])
 def user_details(request, pk):
     """
     Retrieve, update or delete a user
@@ -38,26 +37,25 @@ def user_details(request, pk):
     try:
         user = User.objects.get(pk=pk)
     except User.DoesNotExist:
-        return HttpResponse(status=404)
+        return Response(status=status.HTTP_404_NOT_FOUND)
 
     if request.method == 'GET':
         serializer = UserSerializer(user)
-        return JsonResponse(serializer.data)
+        return Response(serializer.data)
 
     elif request.method == 'PUT':
-        data = JSONParser().parse(request)
-        serializer = UserSerializer(user, data)
+        serializer = UserSerializer(user, data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return JsonResponse(serializer.data)
-        return JsonResponse(serializer.errors, status=400)
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     elif request.method == 'DELETE':
         user.delete()
-        return HttpResponse(status=204)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-@csrf_exempt
+@api_view(['GET', 'POST'])
 def transaction_methods(request):
     """
     List all transactions, or create a new transaction.
@@ -65,18 +63,17 @@ def transaction_methods(request):
     if request.method == 'GET':
         transaction = Transaction.objects.all()
         serializer = TransactionSerializer(transaction, many=True)
-        return JsonResponse(serializer.data, safe=False)
+        return Response(serializer.data)
 
     elif request.method == 'POST':
-        data = JSONParser().parse(request)
-        serializer = TransactionSerializer(data=data)
+        serializer = TransactionSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return JsonResponse(serializer.data, status=201)
-        return JsonResponse(serializer.errors, status=400)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@csrf_exempt
+@api_view(['GET', 'PUT', 'DELETE'])
 def transaction_details(request, pk):
     """
     Retrieve, update or delete a transaction
@@ -84,26 +81,25 @@ def transaction_details(request, pk):
     try:
         transaction = Transaction.objects.get(pk=pk)
     except Transaction.DoesNotExist:
-        return HttpResponse(status=404)
+        return Response(status=status.HTTP_404_NOT_FOUND)
 
     if request.method == 'GET':
         serializer = TransactionSerializer(transaction)
-        return JsonResponse(serializer.data)
+        return Response(serializer.data)
 
     elif request.method == 'PUT':
-        data = JSONParser().parse(request)
-        serializer = TransactionSerializer(transaction, data)
+        serializer = TransactionSerializer(transaction, data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return JsonResponse(serializer.data)
-        return JsonResponse(serializer.errors, status=400)
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     elif request.method == 'DELETE':
         transaction.delete()
-        return HttpResponse(status=204)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-@csrf_exempt
+@api_view(['GET', 'POST'])
 def source_methods(request):
     """
     List all sources, or create a new source.
@@ -111,22 +107,21 @@ def source_methods(request):
     if request.method == 'GET':
         source = Source.objects.all()
         serializer = SourceSerializer(source, many=True)
-        return JsonResponse(serializer.data, safe=False)
+        return Response(serializer.data)
 
     elif request.method == 'POST':
-        data = JSONParser().parse(request)
-        validated_response = validate_source(data)
+        validated_response = validate_source(request.data)
         if validated_response:
             return validated_response
 
-        serializer = SourceSerializer(data=data)
+        serializer = SourceSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return JsonResponse(serializer.data, status=201)
-        return JsonResponse(serializer.errors, status=400)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@csrf_exempt
+@api_view(['GET', 'PUT', 'DELETE'])
 def source_details(request, pk):
     """
     Retrieve, update or delete a source
@@ -134,20 +129,19 @@ def source_details(request, pk):
     try:
         source = Source.objects.get(pk=pk)
     except Source.DoesNotExist:
-        return HttpResponse(status=404)
+        return Response(status=status.HTTP_404_NOT_FOUND)
 
     if request.method == 'GET':
         serializer = SourceSerializer(source)
-        return JsonResponse(serializer.data)
+        return Response(serializer.data)
 
     elif request.method == 'PUT':
-        data = JSONParser().parse(request)
-        serializer = SourceSerializer(source, data)
+        serializer = SourceSerializer(source, data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return JsonResponse(serializer.data)
-        return JsonResponse(serializer.errors, status=400)
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     elif request.method == 'DELETE':
         source.delete()
-        return HttpResponse(status=204)
+        return Response(status=status.HTTP_204_NO_CONTENT)
