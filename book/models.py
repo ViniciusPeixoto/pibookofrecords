@@ -13,7 +13,7 @@ class Source(models.Model):
     source_name = models.CharField(max_length=50)
     source_balance = models.IntegerField(default=0)
 
-    source_users = models.ManyToManyField('User', related_name='sources', blank=True)
+    source_users = models.ManyToManyField('User', related_name='user_sources', blank=True)
 
     def __str__(self):
         return self.source_name
@@ -25,7 +25,11 @@ class Transaction(models.Model):
     transaction_date = models.DateTimeField('transaction date')
     transaction_type = models.CharField(max_length=50)
 
-    transaction_source = models.ForeignKey('Source', on_delete=models.CASCADE)
+    transaction_source = models.ForeignKey('Source', related_name='source_transactions', on_delete=models.CASCADE)
+    transaction_user = models.ForeignKey('User', related_name='user_transactions', on_delete=models.CASCADE)
 
     def __str__(self):
         return self.transaction_description
+
+    class Meta:
+        ordering = ['transaction_date']
