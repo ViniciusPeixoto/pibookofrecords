@@ -97,8 +97,8 @@ class TransactionSerializer(serializers.ModelSerializer):
         user_data = validated_data.pop('transaction_user')
         source_data = validated_data.pop('transaction_source')
         # this should be "get" because the system should not have duplicated users or sources
-        user = User.objects.filter(**user_data).first()
-        source = Source.objects.filter(**source_data).first()
+        user = User.objects.get(**user_data)
+        source = Source.objects.get(**source_data)
         return Transaction.objects.create(transaction_user=user, transaction_source=source, **validated_data)
 
     def update(self, instance, validated_data):

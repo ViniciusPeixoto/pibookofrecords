@@ -4,6 +4,7 @@ from rest_framework.parsers import JSONParser
 
 from book.models import Source, Transaction, User
 from book.serializers import SourceSerializer, TransactionSerializer, UserSerializer
+from book.utils import validate_signup, validate_source
 
 
 @csrf_exempt
@@ -18,6 +19,10 @@ def user_methods(request):
 
     elif request.method == 'POST':
         data = JSONParser().parse(request)
+        validated_response = validate_signup(data)
+        if validated_response:
+            return validated_response
+
         serializer = UserSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
@@ -25,6 +30,7 @@ def user_methods(request):
         return JsonResponse(serializer.errors, status=400)
 
 
+@csrf_exempt
 def user_details(request, pk):
     """
     Retrieve, update or delete a user
@@ -70,6 +76,7 @@ def transaction_methods(request):
         return JsonResponse(serializer.errors, status=400)
 
 
+@csrf_exempt
 def transaction_details(request, pk):
     """
     Retrieve, update or delete a transaction
@@ -108,6 +115,10 @@ def source_methods(request):
 
     elif request.method == 'POST':
         data = JSONParser().parse(request)
+        validated_response = validate_source(data)
+        if validated_response:
+            return validated_response
+
         serializer = SourceSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
@@ -115,6 +126,7 @@ def source_methods(request):
         return JsonResponse(serializer.errors, status=400)
 
 
+@csrf_exempt
 def source_details(request, pk):
     """
     Retrieve, update or delete a source
