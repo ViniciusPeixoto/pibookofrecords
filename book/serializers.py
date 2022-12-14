@@ -3,6 +3,9 @@ from book.models import User, Source, Transaction
 
 
 class UserSerializer(serializers.ModelSerializer):
+    user_transactions = serializers.PrimaryKeyRelatedField(many=True, queryset=Transaction.objects.all(), required=False)
+    user_sources = serializers.PrimaryKeyRelatedField(many=True, queryset=Source.objects.all(), required=False)
+
     class Meta:
         model = User
         fields = [
@@ -21,6 +24,15 @@ class UserSerializer(serializers.ModelSerializer):
         """
         Create and return a new `User` instance, given the validated data.
         """
+        # a new user must not have any sources nor transactions
+        try:
+            validated_data.pop('user_sources')
+        except KeyError:
+            pass
+        try:
+            validated_data.pop('user_transactions')
+        except KeyError:
+            pass
         return User.objects.create(**validated_data)
 
     def update(self, instance, validated_data):
@@ -36,8 +48,6 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class SourceSerializer(serializers.ModelSerializer):
-    source_users = UserSerializer(many=True, read_only=True)
-
     class Meta:
         model = Source
         fields = [
@@ -71,9 +81,6 @@ class SourceSerializer(serializers.ModelSerializer):
 
 
 class TransactionSerializer(serializers.ModelSerializer):
-    transaction_user = UserSerializer()
-    transaction_source = SourceSerializer()
-
     class Meta:
         model = Transaction
         fields = [
@@ -86,20 +93,15 @@ class TransactionSerializer(serializers.ModelSerializer):
             'transaction_source',
             ]
         extra_kwargs = {
-            'transaction_user': {'required': False},
-            'transaction_source': {'required': False}
+            'transaction_user': {'required': True},
+            'transaction_source': {'required': True}
         }
 
     def create(self, validated_data):
         """
         Create and return a new `Transaction` instance, given the validated data.
         """
-        user_data = validated_data.pop('transaction_user')
-        source_data = validated_data.pop('transaction_source')
-        # this should be "get" because the system should not have duplicated users or sources
-        user = User.objects.get(**user_data)
-        source = Source.objects.get(**source_data)
-        return Transaction.objects.create(transaction_user=user, transaction_source=source, **validated_data)
+        return Transaction.objects.create(**validated_data)
 
     def update(self, instance, validated_data):
         """
