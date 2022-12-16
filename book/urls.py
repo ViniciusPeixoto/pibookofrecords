@@ -1,52 +1,13 @@
-from django.urls import path
-from rest_framework import renderers
-from rest_framework.urlpatterns import format_suffix_patterns
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
 
-from book.views import UserViewSet, SourceViewSet, TransactionViewSet, api_root
+from book import views
 
-user_list = UserViewSet.as_view({
-    'get': 'list',
-    'post': 'create',
-})
-user_details = UserViewSet.as_view({
-    'get': 'retrieve',
-    'put': 'update',
-    'patch': 'partial_update',
-    'delete': 'destroy',
-})
-source_list = SourceViewSet.as_view({
-    'get': 'list',
-    'post': 'create',
-})
-source_details = SourceViewSet.as_view({
-    'get': 'retrieve',
-    'put': 'update',
-    'patch': 'partial_update',
-    'delete': 'destroy',
-})
-transaction_list = TransactionViewSet.as_view({
-    'get': 'list',
-    'post': 'create',
-})
-transaction_details = TransactionViewSet.as_view({
-    'get': 'retrieve',
-    'put': 'update',
-    'patch': 'partial_update',
-    'delete': 'destroy',
-})
-transaction_show = TransactionViewSet.as_view({
-    'get': 'show',
-}, renderer_classes=[renderers.StaticHTMLRenderer])
+router = DefaultRouter()
+router.register(r'users', views.UserViewSet, basename='user')
+router.register(r'sources', views.SourceViewSet, basename='source')
+router.register(r'transactions', views.TransactionViewSet, basename='transaction')
 
 urlpatterns = [
-    path('', api_root),
-    path('users/', user_list, name='user-list'),
-    path('users/<int:pk>', user_details, name='user-details'),
-    path('sources/', source_list, name='source-list'),
-    path('sources/<int:pk>', source_details, name='source-details'),
-    path('transactions/', transaction_list, name='transaction-list'),
-    path('transactions/<int:pk>', transaction_details, name='transaction-details'),
-    path('transactions/<int:pk>/data/', transaction_show, name='transaction-show')
+    path('', include(router.urls))
 ]
-
-urlpatterns = format_suffix_patterns(urlpatterns)
